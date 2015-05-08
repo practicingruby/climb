@@ -109,7 +109,7 @@ class ElevatorUI
       row = 6 - n
       
       if floor == n
-        @table.setValueAt(passenger_snowmen, row, elevator_column)
+        @table.setValueAt(passenger_person_glyph, row, elevator_column)
       else
         @table.setValueAt("", row, elevator_column)
       end
@@ -117,21 +117,21 @@ class ElevatorUI
       lobby_column = @table.getColumn("waiting").model_index
       visiting_column = @table.getColumn("visiting").model_index
 
-      @table.setValueAt(snowmen(@lobby_occupants[n]), row, lobby_column)
-      @table.setValueAt(abridged_snowmen(@visitors[n]), row, visiting_column)
+      @table.setValueAt(person_glyph(@lobby_occupants[n]), row, lobby_column)
+      @table.setValueAt(abridged_person_glyph(@visitors[n]), row, visiting_column)
     end
   end
 
-  def passenger_snowmen
-    "[ #{snowmen(@passengers)}]"
+  def passenger_person_glyph
+    "[#{person_glyph(@passengers).ljust(15)}]"
   end
 
-  def snowmen(count)
-    (["☃"]*count).join(" ") 
+  def person_glyph(count)
+    (["웃"]*count).join(" ") 
   end
   
-  def abridged_snowmen(count)
-    "☃ x #{count}"
+  def abridged_person_glyph(count)
+    "웃 x #{count}"
   end
 end
 
@@ -167,22 +167,21 @@ elevator = ElevatorUI.new(table, 5)
 end
 
 loop do
-  case rand(1..12)
+  elevator.unload_passenger until elevator.empty? 
+
+  occupants = elevator.lobby_occupants[elevator.floor]
+  occupants.times { elevator.load_passenger }
+
+  random_floor = rand(1..5)
+  if elevator.visitors[random_floor] > 0
+    elevator.visitor_enters_lobby(random_floor)
+  end
+
+  case rand(1..2)
   when 1
-    if elevator.lobby_occupants[elevator.floor] > 0
-      elevator.load_passenger
-    end
-  when 2
-    elevator.unload_passenger unless elevator.empty?
-  when (3..6)
     elevator.move_up unless elevator.floor == 5
-  when (7..11)
+  when 2
     elevator.move_down unless elevator.floor == 1
-  when 12
-    random_floor = rand(1..5)
-    if elevator.visitors[random_floor] > 0
-      elevator.visitor_enters_lobby(random_floor)
-    end
   end
   
   sleep 0.25
