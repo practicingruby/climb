@@ -11,24 +11,6 @@ import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.JTable
 import javax.swing.JFrame
 
-innerPane = JPanel.new(BorderLayout.new)
-innerPane.setPreferredSize(Dimension.new(800,800))
-innerPane.setBorder(EmptyBorder.new(20, 20, 20, 20))
-
-tab = javax.swing.table.DefaultTableModel.new
-tab.add_column("floor")
-tab.add_column("in elevator")
-tab.add_column("waiting")
-tab.add_column("visiting")
-
-tab.add_row(["Floor", "In elevator", "Waiting", "Visiting"].to_java)
-tab.add_row(["5", "", "", ""].to_java)
-tab.add_row(["4", "", "", ""].to_java)
-tab.add_row(["3", "", "", ""].to_java)
-tab.add_row(["2", "", "", ""].to_java)
-tab.add_row(["1", "[]", "", ""].to_java)
-
-
 class CustomRenderer < DefaultTableCellRenderer
   def initialize(color)
     super()
@@ -44,6 +26,52 @@ class CustomRenderer < DefaultTableCellRenderer
 end
 
 class ElevatorUI
+  def self.run
+    innerPane = JPanel.new(BorderLayout.new)
+    innerPane.setPreferredSize(Dimension.new(800,800))
+    innerPane.setBorder(EmptyBorder.new(20, 20, 20, 20))
+
+    tab = javax.swing.table.DefaultTableModel.new
+    tab.add_column("floor")
+    tab.add_column("in elevator")
+    tab.add_column("waiting")
+    tab.add_column("visiting")
+
+    tab.add_row(["Floor", "In elevator", "Waiting", "Visiting"].to_java)
+    tab.add_row(["5", "", "", ""].to_java)
+    tab.add_row(["4", "", "", ""].to_java)
+    tab.add_row(["3", "", "", ""].to_java)
+    tab.add_row(["2", "", "", ""].to_java)
+    tab.add_row(["1", "[]", "", ""].to_java)
+
+    table = JTable.new(tab)
+    table.get_column("floor").setMaxWidth(50)
+    table.get_column("in elevator").setMaxWidth(150)
+    table.get_column("in elevator").setMinWidth(150)
+    table.get_column("visiting").setMaxWidth(150)
+    table.setFont(Font.new("Monospaced", Font::PLAIN, 12))
+
+
+    col = table.getColumnModel().getColumn(1);
+    col.setCellRenderer(CustomRenderer.new(Color.red));
+
+    col = table.getColumnModel().getColumn(2);
+    col.setCellRenderer(CustomRenderer.new(Color.blue));
+
+    col = table.getColumnModel.getColumn(3);
+    col.setCellRenderer(CustomRenderer.new(Color.darkGray));
+
+    innerPane.add(table, BorderLayout::CENTER)
+
+
+    frame = JFrame.new
+    frame.add(innerPane)
+    frame.pack
+    frame.show
+
+    ElevatorUI.new(table, 5)
+  end
+
   def initialize(table, start_row)
     @table           = table
     @row             = start_row
@@ -133,56 +161,4 @@ class ElevatorUI
   def abridged_person_glyph(count)
     "웃 x #{count}"
   end
-end
-
-table = JTable.new(tab)
-table.get_column("floor").setMaxWidth(50)
-table.get_column("in elevator").setMaxWidth(150)
-table.get_column("in elevator").setMinWidth(150)
-table.get_column("visiting").setMaxWidth(150)
-table.setFont(Font.new("Monospaced", Font::PLAIN, 12))
-
-
-col = table.getColumnModel().getColumn(1);
-col.setCellRenderer(CustomRenderer.new(Color.red));
-
-col = table.getColumnModel().getColumn(2);
-col.setCellRenderer(CustomRenderer.new(Color.blue));
-
-col = table.getColumnModel.getColumn(3);
-col.setCellRenderer(CustomRenderer.new(Color.darkGray));
-
-innerPane.add(table, BorderLayout::CENTER)
-
-
-frame = JFrame.new
-frame.add(innerPane)
-frame.pack
-frame.show
-
-elevator = ElevatorUI.new(table, 5)
-
-50.times do
-  elevator.passenger_starts_visiting(1)
-end
-
-loop do
-  elevator.unload_passenger until elevator.empty? 
-
-  occupants = elevator.lobby_occupants[elevator.floor]
-  occupants.times { elevator.load_passenger }
-
-  random_floor = rand(1..5)
-  if elevator.visitors[random_floor] > 0
-    elevator.visitor_enters_lobby(random_floor)
-  end
-
-  case rand(1..2)
-  when 1
-    elevator.move_up unless elevator.floor == 5
-  when 2
-    elevator.move_down unless elevator.floor == 1
-  end
-  
-  sleep 0.25
 end
