@@ -1,26 +1,38 @@
 class ElevatorController
   def initialize(elevator)
-    @elevator          = elevator
-    @requested_floors  = [] # NOTE: Should we distinguish between requests inside and outside the elevator?
+    @elevator         = elevator
+    @landing_calls    = []
+    @car_calls        = []
 
     @direction = :up
   end
 
-  def add_destination(destination)
+  def landing_call(destination)
     return if @elevator.floor == destination
 
-    @requested_floors << destination
-    @requested_floors.sort!
+    @landing_calls << destination
+    @landing_calls.sort!
+  end
+
+  def car_call(destination)
+    return if @elevator.floor == destination
+
+    @car_calls << destination
+    @car_calls.sort!
+  end
+
+  def scheduled_stops
+    (@landing_calls + @car_calls).uniq
   end
 
   def tick
-    if @requested_floors.empty?
+    if scheduled_stops.empty?
       puts "Elevator is waiting for requests"
-    elsif @requested_floors.include?(@elevator.floor)
+    elsif scheduled_stops.include?(@elevator.floor)
       @requested_floors.delete(@elevator.floor)
       puts "Elevator makes a stop at floor #{@elevator.floor}"
 
-      @elevator.unload_passenger until @elevator.empty? 
+      @elevator.unload_passenger
     elsif @direction == :up
       if @requested_floors.find { |e| e > @elevator.floor }
         @elevator.move_up
