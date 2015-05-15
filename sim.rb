@@ -1,28 +1,54 @@
 require_relative "gui"
-require_relative "model"
+require_relative "elevator"
+require_relative "clock"
+require_relative "passenger"
+require_relative "traffic"
 
-elevator = ElevatorUI.run
+ui = ElevatorUI.run
+elevator = Elevator.new
 
-sleep 4.5
-elevator.move_up
-sleep 1.5
-elevator.move_up
-sleep 1.5
-elevator.move_up
-sleep 1.5
-elevator.move_up
+traffic = Traffic.new(elevator)
 
+i = rand(4..5)
 
-=begin
-loop do
-  random_floor = rand(1..5)
-  if elevator.visitors[random_floor] > 0
-    elevator.visitor_enters_lobby(random_floor) 
-    controller.add_destination(random_floor)
-  end
+puts "Call requested at #{i}"
 
-  controller.tick
-
-  sleep 0.5
+traffic.passengers_in_lobbies.each do |e|
+  ui.passenger_starts_visiting(e.origin)
+  ui.visitor_enters_lobby(e.origin)
 end
-=end
+
+Clock.watch { |t| elevator.tick(t) }
+
+Clock.watch { |t| ui.move_to(elevator.location) if ui.floor != elevator.location }
+
+Clock.watch do |t|
+  deltas = traffic.transfer!
+
+  deltas[:unloaded].times do
+    ui.unload_passenger
+  end
+  
+  deltas[:loaded].times do
+    ui.load_passenger
+  end
+end
+
+Clock.start
+
+until traffic.all_passengers.empty?
+  if elevator.location == 5 && elevator.direction == :up
+    Clock.tick { elevator.stop }
+    elevator.going_down
+  
+  elsif elevator.location == 1 && elevator.direction == :down
+    Clock.tick { elevator.stop }
+    elevator.going_up
+  end
+  
+  elevator.start
+
+  Clock.tick
+end
+
+puts "Simulation complete!"

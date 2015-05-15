@@ -42,7 +42,7 @@ class ElevatorUI
     tab.add_row(["4", "", "", ""].to_java)
     tab.add_row(["3", "", "", ""].to_java)
     tab.add_row(["2", "", "", ""].to_java)
-    tab.add_row(["1", "[]", "", ""].to_java)
+    tab.add_row(["1", "[               ]", "", ""].to_java)
 
     table = JTable.new(tab)
     table.get_column("floor").setMaxWidth(50)
@@ -120,13 +120,8 @@ class ElevatorUI
     redraw
   end
 
-  def move_down
-    @row += 1
-    redraw
-  end
-
-  def move_up
-    @row -= 1
+  def move_to(floor)
+    @row = 6 - floor
     redraw
   end
 

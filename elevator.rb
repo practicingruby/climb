@@ -1,14 +1,16 @@
 
 class Elevator
 
-  attr_reader :motor
+  attr_reader :motor, :direction
 
   def initialize
-    @last_stop = 1 
+    @last_stop = 1
+    @direction = :up
+    @motor     = :stopped
   end
 
   def location
-    if motor == :stopped
+    if @motor == :stopped
       @last_stop
     else
       @last_stop + distance_traveled
@@ -24,11 +26,15 @@ class Elevator
   end
 
   def stop
+    return if @motor == :stopped
+
     puts "Stopping elevator"
     @motor = :stopping
   end
 
   def start
+    return if @motor == :started
+
     puts "Starting elevator"
     @motor = :starting
   end
@@ -57,6 +63,7 @@ class Elevator
       return if distance_traveled.zero?
 
       @last_stop += distance_traveled
+
       @motor      = :stopped
 
       puts "The elevator has stopped moving"
@@ -72,49 +79,12 @@ class Elevator
     last_trip_duration = (@last_tick - @motor_start_time)
     return 0 unless last_trip_duration >= 4.5
 
-    1 + ((last_trip_duration - 4.5) / 1.5).floor
+    m = 1 + ((last_trip_duration - 4.5) / 1.5).floor
+    d = (@direction == :up ? 1 : -1)
+    
+    m*d
   end
 end
-
-
-e = Elevator.new
-
-t=0
-
-5.times do
-  e.start
-
-  ticks = rand(20...150)
-
-
-
-  ticks.times do |i|
-    t += 0.1
-    sleep 0.1
-    puts "t=#{t}"
-    
-    e.tick(t)
-    puts "Elevator is at #{e.location}"
-  end
-
-  e.stop
-
-  until e.motor == :stopped
-    t += 0.1
-    sleep 0.1
-    puts "t=#{t}"
-    puts "Elevator is at #{e.location}"
-    e.tick(t)
-  end
-    
-  puts "Elevator is at #{e.location}"
-end
-
-
-
-
-
-
 
 
 
