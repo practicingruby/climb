@@ -1,10 +1,8 @@
 require_relative "passenger"
 
 class Traffic
-  def initialize(elevator)
-    @elevator = elevator
-
-    @passengers = 5.times.map {
+  def initialize
+    @passengers = 20.times.map {
       start = rand(1..5)
       finish = rand(1..5)
 
@@ -25,29 +23,29 @@ class Traffic
     @passengers
   end
 
-  def entering_passengers
-    passengers_in_lobbies.select { |e| e.origin == @elevator.location }
+  def entering_passengers(elevator)
+    passengers_in_lobbies.select { |e| e.origin == elevator.location }
   end
 
-  def exiting_passengers
-    passengers_in_elevator.select { |e| e.destination == @elevator.location }
+  def exiting_passengers(elevator)
+    passengers_in_elevator(elevator).select { |e| e.destination == elevator.location }
   end
 
-  def passengers_in_elevator
-    @passengers.select { |e| e.riding } 
+  def passengers_in_elevator(elevator)
+    @passengers.select { |e| e.riding == elevator} 
   end
   
   def passengers_in_lobbies
     @passengers.reject { |e| e.riding } 
   end
 
-  def transfer!
-    counts = { :loaded   => entering_passengers.count, 
-               :unloaded => exiting_passengers.count }
+  def transfer!(elevator)
+    counts = { :loaded   => entering_passengers(elevator).count, 
+               :unloaded => exiting_passengers(elevator).count }
 
-    @passengers -= exiting_passengers
+    @passengers -= exiting_passengers(elevator)
 
-    entering_passengers.each { |e| e.riding = true }
+    entering_passengers(elevator).each { |e| e.riding = elevator }
 
     return counts
   end

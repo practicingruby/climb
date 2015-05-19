@@ -26,7 +26,7 @@ class CustomRenderer < DefaultTableCellRenderer
 end
 
 class ElevatorUI
-  def self.run
+  def self.run(building)
     innerPane = JPanel.new(BorderLayout.new)
     innerPane.setPreferredSize(Dimension.new(1000,800))
     innerPane.setBorder(EmptyBorder.new(20, 20, 20, 20))
@@ -77,50 +77,83 @@ class ElevatorUI
 
 
     frame = JFrame.new
-    frame.set_default_close_operation(JFrame::EXIT_ON_CLOSE)
+    frame.setDefaultCloseOperation(JFrame::EXIT_ON_CLOSE)
     frame.add(innerPane)
     frame.pack
     frame.show
 
-    ElevatorUI.new(table, 5)
+    building.redraw(table)
+
+    [ElevatorUI.new(table, "Elevator #1", 5, building),
+     ElevatorUI.new(table, "Elevator #2", 5, building),
+     ElevatorUI.new(table, "Elevator #3", 5, building)]
   end
 
-  def initialize(table, start_row)
+  class PeopleCounter
+    def self.person_glyph(count)
+      (["웃"]*count).join(" ") 
+    end
+    
+    def self.abridged_person_glyph(count)
+      "웃 x #{count}"
+    end
+  end
+
+  class Building
+    def initialize
+      @lobby_occupants = Hash.new(0)
+      @visitors        = Hash.new(0)
+    end
+    
+    attr_reader :lobby_occupants, :visitors
+
+    def passenger_starts_visiting(n)
+      @visitors[n] += 1
+    end
+    
+    def visitor_enters_lobby(n)
+      @visitors[n] -= 1
+      @lobby_occupants[n] += 1
+    end
+
+    def redraw(table)
+      lobby_column    = table.getColumn("waiting").model_index
+      visiting_column = table.getColumn("visiting").model_index
+
+      (1..5).each do |n|
+        row = 6 - n
+        
+        table.setValueAt(PeopleCounter.person_glyph(@lobby_occupants[n]), row, lobby_column)
+        table.setValueAt(PeopleCounter.abridged_person_glyph(@visitors[n]), row, visiting_column)
+      end
+    end
+  end
+
+  def initialize(table, elevator_name, start_row, building)
     @table           = table
     @row             = start_row
+    @elevator_name   = elevator_name
     @passengers      = 0
-    @lobby_occupants = Hash.new(0)
-    @visitors        = Hash.new(0)
+    @building        = building
   end
 
-  attr_reader :lobby_occupants, :visitors
+  attr_reader :lobby_occupants, :visitors, :building
   
   def floor
     6 - @row 
   end
 
   def elevator_column
-    @table.get_column("Elevator #1").model_index
+    @table.get_column(@elevator_name).model_index
   end
 
   def empty?
     @passengers.zero?
   end
 
-  def visitor_enters_lobby(n)
-    @lobby_occupants[n] += 1
-    @visitors[n] -= 1
-    
-    redraw
-  end
-
-  def passenger_starts_visiting(n)
-    @visitors[n] += 1
-    redraw
-  end
 
   def load_passenger
-    @lobby_occupants[floor] -= 1
+    @building.lobby_occupants[floor] -= 1
     @passengers += 1
 
     redraw
@@ -128,7 +161,7 @@ class ElevatorUI
 
   def unload_passenger
     @passengers -= 1
-    passenger_starts_visiting(floor)
+    @building.passenger_starts_visiting(floor)
     
     redraw
   end
@@ -149,24 +182,12 @@ class ElevatorUI
       else
         @table.setValueAt("", row, elevator_column)
       end
-      
-      lobby_column = @table.getColumn("waiting").model_index
-      visiting_column = @table.getColumn("visiting").model_index
-
-      @table.setValueAt(person_glyph(@lobby_occupants[n]), row, lobby_column)
-      @table.setValueAt(abridged_person_glyph(@visitors[n]), row, visiting_column)
     end
+    
+    @building.redraw(@table)
   end
 
   def passenger_person_glyph
-    "[#{person_glyph(@passengers).ljust(15)}]"
-  end
-
-  def person_glyph(count)
-    (["웃"]*count).join(" ") 
-  end
-  
-  def abridged_person_glyph(count)
-    "웃 x #{count}"
+    "[#{PeopleCounter.person_glyph(@passengers).ljust(15)}]"
   end
 end

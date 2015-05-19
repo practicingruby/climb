@@ -4,49 +4,54 @@ require_relative "clock"
 require_relative "passenger"
 require_relative "traffic"
 
-ui = ElevatorUI.run
-elevator = Elevator.new
+building  = ElevatorUI::Building.new
+elevators = ElevatorUI.run(building).zip(3.times.map { Elevator.new })
 
-traffic = Traffic.new(elevator)
-
-i = rand(4..5)
-
-puts "Call requested at #{i}"
+traffic = Traffic.new
 
 traffic.passengers_in_lobbies.each do |e|
-  ui.passenger_starts_visiting(e.origin)
-  ui.visitor_enters_lobby(e.origin)
+  # FIXME: Should be able to trigger a redraw automatically on these events
+  building.passenger_starts_visiting(e.origin)
+  building.visitor_enters_lobby(e.origin)
 end
 
-Clock.watch { |t| elevator.tick(t) }
+Clock.watch { |t| elevators.each { |ui,model| model.tick(t) } }
 
-Clock.watch { ui.move_to(elevator.location) if ui.floor != elevator.location }
-
-Clock.watch do |t|
-  deltas = traffic.transfer!
-
-  deltas[:unloaded].times do
-    ui.unload_passenger
+Clock.watch do 
+  elevators.each do |ui, model|
+    ui.move_to(model.location) if ui.floor != model.location
   end
-  
-  deltas[:loaded].times do
-    ui.load_passenger
+end
+
+Clock.watch do
+  elevators.shuffle.each do |ui, model|
+    deltas = traffic.transfer!(model)
+
+    deltas[:unloaded].times do
+      ui.unload_passenger
+    end
+    
+    deltas[:loaded].times do
+      ui.load_passenger
+    end
   end
 end
 
 Clock.start
 
 until traffic.all_passengers.empty?
-  if elevator.location == 5 && elevator.direction == :up
-    Clock.tick { elevator.stop }
-    elevator.going_down
-  
-  elsif elevator.location == 1 && elevator.direction == :down
-    Clock.tick { elevator.stop }
-    elevator.going_up
+  elevators.each do |ui, model|
+    if model.location == 5 && model.direction == :up
+      Clock.tick { model.stop }
+      model.going_down
+    
+    elsif model.location == 1 && model.direction == :down
+      Clock.tick { model.stop }
+      model.going_up
+    end
+    
+    model.start
   end
-  
-  elevator.start
 
   Clock.tick
 end
