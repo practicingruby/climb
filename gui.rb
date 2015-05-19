@@ -28,26 +28,32 @@ end
 class ElevatorUI
   def self.run
     innerPane = JPanel.new(BorderLayout.new)
-    innerPane.setPreferredSize(Dimension.new(800,800))
+    innerPane.setPreferredSize(Dimension.new(1000,800))
     innerPane.setBorder(EmptyBorder.new(20, 20, 20, 20))
 
     tab = javax.swing.table.DefaultTableModel.new
     tab.add_column("floor")
-    tab.add_column("in elevator")
+    tab.add_column("Elevator #1")
+    tab.add_column("Elevator #2")
+    tab.add_column("Elevator #3")
     tab.add_column("waiting")
     tab.add_column("visiting")
 
-    tab.add_row(["Floor", "In elevator", "Waiting", "Visiting"].to_java)
-    tab.add_row(["5", "", "", ""].to_java)
-    tab.add_row(["4", "", "", ""].to_java)
-    tab.add_row(["3", "", "", ""].to_java)
-    tab.add_row(["2", "", "", ""].to_java)
-    tab.add_row(["1", "[               ]", "", ""].to_java)
+    tab.add_row(["Floor", "Elevator #1", "Elevator #2", "Elevator #3", "Waiting", "Visiting"].to_java)
+    tab.add_row(["5", "", "", "", "", ""].to_java)
+    tab.add_row(["4", "", "", "", "", ""].to_java)
+    tab.add_row(["3", "", "", "", "", ""].to_java)
+    tab.add_row(["2", "", "", "", "", ""].to_java)
+    tab.add_row(["1", "[               ]", "[               ]", "[               ]", "", ""].to_java)
 
     table = JTable.new(tab)
     table.get_column("floor").setMaxWidth(50)
-    table.get_column("in elevator").setMaxWidth(150)
-    table.get_column("in elevator").setMinWidth(150)
+    table.get_column("Elevator #1").setMaxWidth(150)
+    table.get_column("Elevator #1").setMinWidth(150)
+    table.get_column("Elevator #2").setMaxWidth(150)
+    table.get_column("Elevator #2").setMinWidth(150)
+    table.get_column("Elevator #3").setMaxWidth(150)
+    table.get_column("Elevator #3").setMinWidth(150)
     table.get_column("visiting").setMaxWidth(150)
     table.setFont(Font.new("Monospaced", Font::PLAIN, 12))
 
@@ -56,15 +62,22 @@ class ElevatorUI
     col.setCellRenderer(CustomRenderer.new(Color.red));
 
     col = table.getColumnModel().getColumn(2);
+    col.setCellRenderer(CustomRenderer.new(Color.red.darker));
+
+    col = table.getColumnModel().getColumn(3);
+    col.setCellRenderer(CustomRenderer.new(Color.red.darker.darker));
+
+    col = table.getColumnModel().getColumn(4);
     col.setCellRenderer(CustomRenderer.new(Color.blue));
 
-    col = table.getColumnModel.getColumn(3);
+    col = table.getColumnModel.getColumn(5);
     col.setCellRenderer(CustomRenderer.new(Color.darkGray));
 
     innerPane.add(table, BorderLayout::CENTER)
 
 
     frame = JFrame.new
+    frame.set_default_close_operation(JFrame::EXIT_ON_CLOSE)
     frame.add(innerPane)
     frame.pack
     frame.show
@@ -87,7 +100,7 @@ class ElevatorUI
   end
 
   def elevator_column
-    @table.get_column("in elevator").model_index
+    @table.get_column("Elevator #1").model_index
   end
 
   def empty?

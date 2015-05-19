@@ -10,11 +10,17 @@ class Traffic
 
       redo if start == finish
       
-      puts "P: #{start} #{finish}"
       Passenger.new(start, finish)
     }
   end
-  
+
+  def add_passenger(start, finish)
+    passenger = Passenger.new(start, finish)
+    @passengers << passenger
+
+    passenger
+  end
+
   def all_passengers
     @passengers
   end

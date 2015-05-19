@@ -20,7 +20,7 @@ end
 
 Clock.watch { |t| elevator.tick(t) }
 
-Clock.watch { |t| ui.move_to(elevator.location) if ui.floor != elevator.location }
+Clock.watch { ui.move_to(elevator.location) if ui.floor != elevator.location }
 
 Clock.watch do |t|
   deltas = traffic.transfer!
