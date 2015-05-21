@@ -10,7 +10,7 @@ class Actor
   end
 
   def arrive(building)
-    puts "#{@name} arrives at the building"
+    puts "[#{Clock.time}] #{@name} arrives at the building"
 
     @starting_floor    = 1
     @destination_floor = rand(2..5)
@@ -30,7 +30,7 @@ class Actor
 
     EventLog.publish(:landing_call, :direction => :down, :floor => @starting_floor)
 
-    puts "#{@name} wants to leave the building"
+    puts "[#{Clock.time}] #{@name} wants to leave the building"
   end
 
   attr_reader :starting_floor, :destination_floor, :status, :name
@@ -42,20 +42,21 @@ class Actor
       when :waiting
         if params[:floor] == @starting_floor && params[:ui].passengers < 3
           params[:ui].load_passenger
-          puts "#{@name} boards elevator at #{@starting_floor}"
-          puts "#{@name} requests to visit floor #{@destination_floor}"
+          puts "[#{Clock.time}] #{@name} boards elevator at #{@starting_floor}"
+          puts "[#{Clock.time}] #{@name} requests to visit floor #{@destination_floor}"
+          EventLog.publish(:car_call, :floor => @destination_floor)
           @status = :riding
           @ui     = params[:ui] # Gross!
         end
       when :riding
         if params[:floor] == @destination_floor && params[:ui] == @ui
           params[:ui].unload_passenger
-          puts "#{@name} exits elevator at #{@destination_floor}"
+          puts "[#{Clock.time}] #{@name} exits elevator at #{@destination_floor}"
 
           if params[:floor] == 1
             @status = :gone
             params[:ui].building.visitor_leaves_building
-            puts "#{@name} has left the building!"
+            puts "[#{Clock.time}] #{@name} has left the building!"
           else
             @status = :visiting
           end

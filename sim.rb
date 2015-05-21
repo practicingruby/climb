@@ -5,6 +5,36 @@ require_relative "passenger"
 require_relative "traffic"
 require_relative "actor"
 require_relative "event_log"
+require_relative "elevator_controller"
+
+Clock.start
+
+building  = ElevatorUI::Building.new
+elevators = ElevatorUI.run(building).zip(3.times.map { Elevator.new })
+
+model = elevators.first.last
+ui    = elevators.first.first 
+
+controller = ElevatorController.new(model, ui)
+EventLog.subscribers << controller
+
+actor = Actor.new
+EventLog.subscribers << actor
+actor.arrive(building)
+
+building.redraw(ui.table)
+
+Clock.watch do |t|
+  model.tick(t)
+  controller.tick
+
+  if ui.floor != model.location
+    ui.move_to(model.location) 
+  end
+end
+
+loop { Clock.tick; }
+
 
 =begin
 building  = ElevatorUI::Building.new

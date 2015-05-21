@@ -30,14 +30,14 @@ class Elevator
   def stop
     return if @motor == :stopped
 
-    puts "Stopping elevator"
+    puts "[#{Clock.time}] Stopping elevator"
     @motor = :stopping
   end
 
   def start
     return if @motor == :started
 
-    puts "Starting elevator"
+    puts "[#{Clock.time}] Starting elevator"
     @motor = :starting
   end
 
