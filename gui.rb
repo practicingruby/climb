@@ -116,6 +116,10 @@ class ElevatorUI
       @lobby_occupants[n] += 1
     end
 
+    def visitor_leaves_building
+      @visitors[1] -= 1
+    end
+
     def redraw(table)
       lobby_column    = table.getColumn("waiting").model_index
       visiting_column = table.getColumn("visiting").model_index
@@ -137,7 +141,7 @@ class ElevatorUI
     @building        = building
   end
 
-  attr_reader :lobby_occupants, :visitors, :building
+  attr_reader :lobby_occupants, :visitors, :building, :table, :passengers
   
   def floor
     6 - @row 

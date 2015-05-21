@@ -1,6 +1,4 @@
-
 class Elevator
-
   attr_reader :motor, :direction
 
   def initialize
@@ -25,6 +23,10 @@ class Elevator
     @direction = :down
   end
 
+  def can_platform?
+    [:stopped, :starting].include?(@motor) || distance_traveled.nonzero?
+  end
+
   def stop
     return if @motor == :stopped
 
@@ -37,14 +39,6 @@ class Elevator
 
     puts "Starting elevator"
     @motor = :starting
-  end
-
-  def open_doors
-    @doors = :open
-  end
-
-  def close_doors
-    @doors = :closed
   end
 
   def current_floor
@@ -65,8 +59,7 @@ class Elevator
       @last_stop += distance_traveled
 
       @motor      = :stopped
-
-      puts "The elevator has stopped moving"
+      EventLog.publish(:elevator_stopped, :elevator => self, :floor => location)
     end
   end
 
